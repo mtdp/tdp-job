@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"  
+	  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xmlns:context="http://www.springframework.org/schema/context"  
+	  xmlns:aop="http://www.springframework.org/schema/aop"
+	  xmlns:tx="http://www.springframework.org/schema/tx"
+	  xsi:schemaLocation="
+	  http://www.springframework.org/schema/beans  
+	  http://www.springframework.org/schema/beans/spring-beans.xsd  
+	  http://www.springframework.org/schema/aop  
+	  http://www.springframework.org/schema/aop/spring-aop.xsd
+	  http://www.springframework.org/schema/tx  
+	  http://www.springframework.org/schema/tx/spring-tx.xsd
+	  http://www.springframework.org/schema/context   
+      http://www.springframework.org/schema/context/spring-context.xsd">
+		
+	  <!-- mq连接池 -->
+      <bean id="poolConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
+      		<property name="connectionFactory" ref="mqConnectionFactory"/>
+      		<property name="maxConnections" value="40"/>
+      </bean>
+	  	
+	  <!-- 连接工厂 -->
+	  <bean id="mqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+	  		<property name="brokerURL" value="${active.mq.brokerurl}"/>
+	  </bean>
+	  
+	  <!-- 记录任务日志队列 -->
+	  <bean id="mqDestination1" class="org.apache.activemq.command.ActiveMQQueue">
+	  		<constructor-arg index="0" value="${active.mq.receiver.job.test}"/>
+	  </bean>	   
+	  
+	  <!-- spring jms 模版 -->
+	  <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+	  		<property name="connectionFactory" ref="poolConnectionFactory"/>
+	  </bean>
+	  
+	  <!-- 记录任务日志队列 -->
+	  <bean id="jmsContainer1" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+	  		<property name="connectionFactory" ref="poolConnectionFactory"/>
+	  		<property name="destination" ref="mqDestination1"/>
+	  		<property name="messageListener" ref="tdpJobDemoClient"/>
+	  		<property name="concurrentConsumers" value="5"/>
+	  </bean>
+	  
+	  <bean id="tdpJobDemoClient" class="com.github.mtdp.job.demo.TdpJobDemoClient"/>
+	  
+</beans>

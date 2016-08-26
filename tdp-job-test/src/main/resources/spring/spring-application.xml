@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"  
+	  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xmlns:context="http://www.springframework.org/schema/context"  
+	  xmlns:aop="http://www.springframework.org/schema/aop"
+	  xmlns:tx="http://www.springframework.org/schema/tx"
+	  xsi:schemaLocation="
+	  http://www.springframework.org/schema/beans  
+	  http://www.springframework.org/schema/beans/spring-beans.xsd  
+	  http://www.springframework.org/schema/aop  
+	  http://www.springframework.org/schema/aop/spring-aop.xsd
+	  http://www.springframework.org/schema/tx  
+	  http://www.springframework.org/schema/tx/spring-tx.xsd
+	  http://www.springframework.org/schema/context   
+      http://www.springframework.org/schema/context/spring-context.xsd">
+      		
+		   <!-- 采用注释的方式配置bean -->   
+	       <context:annotation-config />   
+	       <!-- 配置要扫描的包 -->   
+	       <context:component-scan base-package="com.github.mtdp.job"/>
+	       <!-- 注解事务 -->
+	       <tx:annotation-driven transaction-manager="transactionManager" />
+ 		   
+ 		   <!-- 加载配置文件 -->
+	       <bean id="propertyConfigurer" class="com.github.mtdp.util.ProPConfigurer" lazy-init="false">
+		        <property name="locations">
+		            <list>
+		                <value>classpath:spring/job.properties</value>
+		            	<!-- 
+		                <value>http://prop_server/props/tdp-job/job.properties</value>
+		                 -->
+		            </list>
+		        </property>
+		        <!-- 找不到以上配置不会报错 -->
+		        <property name="ignoreResourceNotFound" value="true"/>
+		        <!-- 忽略不可解析的配置文件 -->
+		        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	       </bean> 
+ 		   
+	  	   <!-- druid 对spring 监控 
+	  	   <import resource="spring-druid-monitor.xml"/>
+	  	   -->
+	  	   <!-- activemq -->
+	  	   <import resource="spring-active-mq.xml"/>
+	  	   <!-- db 
+	  	   <import resource="spring-db.xml"/>
+	  	   -->
+	  	   
+</beans>

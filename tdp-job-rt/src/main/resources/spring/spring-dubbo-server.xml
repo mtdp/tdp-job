@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+
+	<dubbo:application name="tdp-job" owner="wangguoqing" organization="mtdp"/>
+
+	<dubbo:registry timeout="15000" id="service" protocol="${dubbo.registry.protocol}" file="${user.home}/.dubbo-cache/provider-tdp-sms" address="${dubbo.registry.address}" group="dubbo-online" check="false" />
+	
+	<dubbo:protocol port="1${env.num}${dubbo.port}" name="${dubbo.protocol.name}" threadpool="${dubbo.protocol.threadpool}" threads="${dubbo.protocol.threads}" />
+	
+	<dubbo:provider timeout="${dubbo.provider.timeout}"/>
+	
+	<!-- 服务消费者缺省值配置 check="false" 关闭所有服务的启动时检查-->
+	<dubbo:consumer timeout="15000" retries="0" check="false"/>
+			
+	<!-- 短信下行接服务
+	<dubbo:service interface="com.github.mtdp.sms.service.IMTService" ref="MTServiceDefaultImpl" version="1.0.0"/>
+	 -->
+	
+</beans>

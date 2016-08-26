@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 按照每天生成日志文件 -->
+    <appender name="DailyFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${user.home}/logs/tdp-job/tdp-job.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${user.home}/logs/tdp-job/tdp-job.log.%d{yyyy-MM-dd}</FileNamePattern>
+            <!--自动删除300天前的数据-->
+            <MaxHistory>300</MaxHistory>
+        </rollingPolicy>
+        <!--日志文件最大的大小-->
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>2048MB</MaxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>%d{yyy-MM-dd HH:mm:ss,GMT+8} %p %t -%X{trackingNo} %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+        <charset>UTF-8</charset>
+    </appender>
+    
+    <!-- 控制台 -->
+    <!--  格式化输出。  
+       %d/date{HH:mm:ss.SSS}：输出日志的打印日志，模式语法与java.text.SimpleDateFormat 兼容  
+       %-5p/le/level：级别从左显示5个字符宽度  
+       %t/thread    输出产生日志的线程名。  
+       %logger{36} 表示logger名字最长36个字符 为0表示只输入logger最右边点符号之后的字符串  
+       %F java源文件名 *.java  
+       %L 行  
+       %m/msg/message：日志内容  
+       %n：换行符 
+    --> 
+    <appender name="STDOUTAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyy-MM-dd HH:mm:ss,GMT+8} %p %t -%X{trackingNo} %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+    </appender>
+    
+ 	<logger name="java.sql" level="INFO" additivity="false">
+        <appender-ref ref="STDOUTAppender"/>
+    </logger>
+
+    <logger name="org.mybatis" level="INFO" additivity="false">
+        <appender-ref ref="STDOUTAppender"/>
+    </logger>
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="STDOUTAppender"/>
+        <appender-ref ref="DailyFileAppender"/>
+    </root>    
+</configuration>

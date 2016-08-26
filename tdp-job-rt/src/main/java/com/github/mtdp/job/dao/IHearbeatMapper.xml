@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	<mapper namespace="com.github.mtdp.job.dao.IHearbeatMapper">
+	
+		<select id="get" resultType="Hearbeat">
+			select *
+			from t_job_hearbeat
+			where id=#{id}
+		</select>
+		
+		<select id="gets" resultType="Hearbeat">
+			select *
+			from t_job_hearbeat 
+		</select>
+		
+		<select id="getHearbeatByLockId" resultType="Hearbeat">
+			select *
+			from t_job_hearbeat
+			where lockId=#{lockId}	
+		</select>
+		
+		<delete id="del">
+			delete from t_job_hearbeat where id=#{id}
+		</delete>
+		
+		<delete id="delByLockId">
+			delete from t_job_hearbeat where lockId=#{lockId}
+		</delete>
+		 
+		<!-- keyProperty="id" 指定了Hearbeat对象中的属性 -->
+		<insert id="add" parameterType="Hearbeat" keyProperty="id" useGeneratedKeys="true">
+			insert into t_job_hearbeat(nodeName
+						<if test="ip != null and ip != ''">
+							,ip
+						</if>
+						<if test="port != null and port != ''">
+							,port
+						</if>
+						<if test="lockId != null and lockId != ''">
+							,lockId
+						</if>
+						<if test="createTime != null and createTime != ''">
+							,createTime
+						</if>
+						<if test="updateTime != null and updateTime != ''">
+							,updateTime
+						</if>
+						) 
+						values(#{nodeName}
+						<if test="ip != null and ip != ''">
+							,#{ip}
+						</if>
+						<if test="port != null and port != ''">
+							,#{port}
+						</if>
+						<if test="lockId != null and lockId != ''">
+							,#{lockId}
+						</if>
+						<if test="createTime != null and createTime != ''">
+							,#{createTime}
+						</if>
+						<if test="updateTime != null and updateTime != ''">
+							,#{updateTime}
+						</if>
+						)
+		</insert>
+		
+		<!-- 心跳update考虑到系统问题可以更新创建时间,创建时间逻辑变成nodeName节点最早一次更新数据时间 -->
+		<update id="update" parameterType="Hearbeat">
+			update t_job_hearbeat 
+			<set>
+				<if test="nodeName != null and nodeName != ''">
+					nodeName=#{nodeName},
+				</if>
+				<if test="ip != null and ip != ''">
+					ip=#{ip},
+				</if>
+				<if test="port != null and port != ''">
+					port=#{port},
+				</if>
+				<if test="lockId != null and lockId != ''">
+					lockId=#{lockId},
+				</if>
+				<if test="createTime != null and createTime != ''">
+					createTime=#{createTime},
+				</if>
+				<if test="updateTime != null and updateTime != ''">
+					updateTime=#{updateTime},
+				</if>
+			</set>
+			where id=#{id}
+		</update>
+		
+	</mapper>
