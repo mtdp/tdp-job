@@ -119,11 +119,25 @@
 	  	   		<property name="defaultEncoding" value="UTF-8"/>
 	  	   </bean>
 	  	   
+	  	   <!-- 缓存管理 -->
+	  	   <bean id="redisManager" class="com.github.mtdp.persistence.RedisManager" init-method="init">
+	  	   		<property name="host" value="${redis.host}"/>
+	  	   		<property name="port" value="${redis.port}"/>
+	  	   		<property name="redisPwd" value="${redis.pwd}"/>
+	  	   		<property name="config" ref="jedis.JedisPoolConfig"/>
+	  	   </bean>
+	   	   <bean id="jedis.JedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+	   	   		<property name="maxTotal" value="5"/>
+	   	   		<property name="maxIdle" value="1"/>
+	   	   		<property name="maxWaitMillis" value="5000"/>
+	   	   		<property name="testOnBorrow" value="true"/>
+	   	   </bean>
+	  	   
 	  	   <!-- druid 对spring 监控 -->
 	  	   <import resource="spring-druid-monitor.xml"/>
 	  	   <!-- dubbo 服务 -->
 	  	   <import resource="spring-dubbo-server.xml"/>
 	  	   <!-- activemq -->
-	  	   <import resource="spring-active-mq.xml"/>
+	  	   <import resource="spring-queue.xml"/>
 	  	   
 </beans>

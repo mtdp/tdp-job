@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.github.mtdp.job.api.bean.JobDetailBean;
 import com.github.mtdp.job.dao.IJobDetailMapper;
 import com.github.mtdp.job.dao.domain.JobDetail;
+import com.github.mtdp.job.service.ICacheService;
 import com.github.mtdp.job.service.IJobContainer;
 import com.github.mtdp.job.util.CronExpressUtil;
 import com.github.mtdp.util.BeanUtil;
@@ -26,20 +27,26 @@ import com.github.mtdp.util.QueueUtil;
  * @date 2016年7月31日上午8:40:09
  *
  */
-@Service("job.service.impl.JobContainerImpl")
-public class JobContainerImpl implements IJobContainer {
+@Service("job.service.impl.JobContainerCacheImpl")
+public class JobContainerCacheImpl implements IJobContainer {
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	/**根据心跳控制同一时间只有一个job服务节点执行 true表示次节点执行,false标识此节点不执行,默认false**/
 	private volatile boolean isRun = false;
-	/**查询数据库需要执行任务的间隔时间,默认30s=30*1000**/
+	/**查询数据库需要执行任务的间隔时间,默认3s=3*1000**/
 	private volatile long sleepTime = 3 * 1000;
-	/**过滤最大x毫秒内需要执行的任务,默认30秒=30*1000毫秒**/
-	private volatile long maxExeJobTime = 5 * 1000;
+	/**过滤最大x毫秒内需要执行的任务,默认3秒=3*1000毫秒**/
+	private volatile long maxExeJobTime = 3 * 1000;
+	
+	/**缓存存储job的key**/
+	private String jobDetailCacheKey = "job:need:details";
 	
 	@Autowired
 	private IJobDetailMapper jobDetailMapper;
+	
+	@Autowired
+	private ICacheService cacheService;
 	
 	@Autowired
 	private JmsTemplate jmsTemplate;
@@ -51,18 +58,18 @@ public class JobContainerImpl implements IJobContainer {
 		//3.将最近执行任务的时间更新至数据库
 		logger.info("开始循环执行任务处理isRun={}",this.isRun);
 		while(isRun){
-			//查询数据库
-			List<JobDetail> jobs = this.jobDetailMapper.getNeedExeJobDetails();
+			List<JobDetail> jobs = this.cacheService.getNeedExeJobDetails(this.jobDetailCacheKey);
 			logger.info("需要处理的任务数量cnt={}",jobs.size());
 			for(JobDetail j : jobs){
 				Date d = new Date();
 				//任务下次执行的时间
 				Date nextExeTime = CronExpressUtil.getLastTime(j.getCronExpress(), d);
 				long lagVal = DateUtil.calculateTwoTimeLag(nextExeTime, d);
-				//下次执行时间是当前时候之后,并且大于当前时间maxExeJobTime毫秒,通知client执行此任务
 				if(lagVal >= 0 && lagVal <= this.maxExeJobTime){
 					j.setLastExeTime(nextExeTime);
 					this.exeJob(j);
+					//更新缓存list中某个任务的数据
+					this.cacheService.updateValue4Key(this.jobDetailCacheKey, jobs);
 				}else{
 					//当前时间={},key={},最近一次执行时间={}
 					logger.info("当前时间={},任务key={}此次不需要执行,最近一次执行时间={}",DateUtil.getCurrentTime2(),j.getJobKey(),DateUtil.formatDefault2(j.getLastExeTime()));

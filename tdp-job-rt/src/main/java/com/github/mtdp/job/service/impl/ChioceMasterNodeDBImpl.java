@@ -1,11 +1,13 @@
 package com.github.mtdp.job.service.impl;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetAddress;
 import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.github.mtdp.job.dao.IHearbeatMapper;
 import com.github.mtdp.job.dao.domain.Hearbeat;
@@ -26,6 +28,7 @@ public class ChioceMasterNodeDBImpl implements IChioceMasterNode {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
+	@Qualifier("job.service.impl.JobContainerCacheImpl")
 	private IJobContainer jobContainer;
 	
 	@Autowired
@@ -41,6 +44,9 @@ public class ChioceMasterNodeDBImpl implements IChioceMasterNode {
 	private long maxHearbeatTime = 20 * 1000;
 	/**循环执行心跳的间隔时间 5*1000ms**/
 	private long cycleIntervalTime = 5 * 1000; 
+	
+	/**心跳丢失master次数,连续累计3次执行更新master sql**/
+	private int lostMasterCnt = 0;
 	
 	public ChioceMasterNodeDBImpl(){
 		InetAddress inet = SystemUtil.getSystemLocalIp();
@@ -77,41 +83,37 @@ public class ChioceMasterNodeDBImpl implements IChioceMasterNode {
 					int c = this.hearbeatMapper.update(t);
 					if(c == 1){
 						isExe = true;
+						//心跳丢失master次数清零
+						lostMasterCnt = 0;
 					}else{
 						 logger.error("更新master心跳数据失败ip={},nodeName={}",this.localIp,this.localName);
 					}
 				}else{
-					//2.如果不一样,并且更新时间超过最大心跳时间,(v1:删除数据库的记录,新增一条本机的数据库记录)v2:更新数据的记录,ip,nodeName,lockId,createTime,updateTime
+					//2.如果不一样,并且更新时间超过最大心跳时间,更新数据的记录,ip,nodeName,lockId,createTime,updateTime
 					if(DateUtil.calculateTwoTimeLag(new Date(), h.getUpdateTime()) > this.maxHearbeatTime){
-						logger.info("当前心跳服务master不是本机,且最后更新时间大于maxHearbeatTime={}",this.maxHearbeatTime);
-						/*
-						int c = this.hearbeatMapper.delByLockId(this.lockId);
-						if(c == 1){
+						logger.info("当前心跳服务master不是本机,且最后更新时({})大于maxHearbeatTime={}ms,",DateUtil.formatDefault2(h.getUpdateTime()),this.maxHearbeatTime);
+						++ this.lostMasterCnt;
+						//丢失次数小于3次不更新master机器
+						if(this.lostMasterCnt < 3){
+							logger.info("心跳丢失master次数lostMasterCnt={}",this.lostMasterCnt);
+						}else{
 							Hearbeat t = new Hearbeat();
+							t.setId(h.getId());
 							t.setIp(this.localIp);
 							t.setNodeName(this.localName);
 							t.setLockId(this.lockId);
 							t.setCreateTime(new Date());
 							t.setUpdateTime(new Date());
-							int cnt = this.hearbeatMapper.add(t);
-							if(cnt == 1){
+							int c = this.hearbeatMapper.update(t);
+							if(c == 1){
 								isExe = true;
 							}
-						}*/
-						//2016-08-26 13:05:26 直接update,减少数据库交互次数,快速抢占锁
-						Hearbeat t = new Hearbeat();
-						t.setId(h.getId());
-						t.setIp(this.localIp);
-						t.setNodeName(this.localName);
-						t.setLockId(this.lockId);
-						t.setCreateTime(new Date());
-						t.setUpdateTime(new Date());
-						int c = this.hearbeatMapper.update(t);
-						if(c == 1){
-							isExe = true;
+							//TODO 2016-08-26 13:12:24 如果master机器由于线程卡死变成salve机器,并且它的查询数据库需要执行的任务线程没有停止,怎么让他停止.
+							//此问题在2016-08-28部署2个节点出现
+							//idea 2016-08-26 23:33:26
+							//通过修改心跳前的hearbeat表ip+port通过dubbo服务通知其不再扫描数据库及修改isRun=false
+							//jobContainer包装一个wapper提供dubbo服务修改jobContainer isRun 属性的方法
 						}
-						//TODO 2016-08-26 13:12:24 如果master机器由于线程卡死变成salve机器,并且它的查询数据库需要执行的任务线程没有停止,怎么让他停止
-						
 					}else{
 						logger.info("数据库的心跳主机不是本机且最后更新时间({})小于最大心跳({}ms)",DateUtil.formatDefault2(h.getUpdateTime()),this.maxHearbeatTime);
 						//检查循环查询数据库需要执行的任务线程是否停止
@@ -148,11 +150,21 @@ public class ChioceMasterNodeDBImpl implements IChioceMasterNode {
 		if(isExe){
 			if(!this.jobContainer.getRun()){
 				jobContainer.setRun(true);
-				new Thread(){
+				Thread t = new Thread(){
 					public void run() {
 						jobContainer.process();
 					};
-				}.start();
+				};
+				//处理t线程出现异常情况
+				t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+					@Override
+					public void uncaughtException(Thread t, Throwable e) {
+						logger.info("任务执行容器初始化异常t={},e={}",t,e);
+						//设置jobContanier的isRun=false,下次心跳执行时继续执行
+						jobContainer.setRun(false);
+					}
+				});
+				t.start();
 			}else{
 				logger.info("不需要修改isRun的值,isRun={}",this.jobContainer.getRun());
 			}
@@ -167,6 +179,20 @@ public class ChioceMasterNodeDBImpl implements IChioceMasterNode {
 			logger.error("循环执行心跳线程被打断sleepTime={}ms",this.cycleIntervalTime);
 		}
 	}
+	
+	public long getMaxHearbeatTime() {
+		return maxHearbeatTime;
+	}
+	public void setMaxHearbeatTime(long maxHearbeatTime) {
+		this.maxHearbeatTime = maxHearbeatTime;
+	}
+	public long getCycleIntervalTime() {
+		return cycleIntervalTime;
+	}
+	public void setCycleIntervalTime(long cycleIntervalTime) {
+		this.cycleIntervalTime = cycleIntervalTime;
+	}
+	
 	
 	public static void main(String[] args) throws Exception {
 		ChioceMasterNodeDBImpl c = new ChioceMasterNodeDBImpl();

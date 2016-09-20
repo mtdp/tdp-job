@@ -71,7 +71,7 @@ public class JobExeResultListener implements SessionAwareMessageListener{
 			Long jobId = bean.getJobId();
 			JobDetail j = this.jobDetailMapper.get(jobId);
 			try{
-				if(bean.getStatus().intValue() == JobConstantsCode.JOB_EXE_FAIL && j.isAlarm()){
+				if(bean.getStatus().intValue() == JobConstantsCode.JOB_EXE_FAIL && j.getIsAlarm().booleanValue()){
 					logger.error("任务jobkey={}执行失败",bean.getJobKey());
 					//TODO 可以考虑异步发送邮件
 					this.sendMail(bean,j);

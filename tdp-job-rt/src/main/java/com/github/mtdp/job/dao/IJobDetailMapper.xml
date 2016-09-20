@@ -21,6 +21,12 @@
 				  and lastExeTime &lt; now() or lastExeTime is null		
 		</select>
 		
+		<select id="getEnableJobDetails" resultType="JobDetail">
+			select *
+			from t_job_detail
+			where status=${@com.github.mtdp.job.api.JobConstantsCode@ENABLE} 
+		</select>
+		
 		<delete id="del">
 			delete from t_job_detail where jobId=#{jobId}
 		</delete>

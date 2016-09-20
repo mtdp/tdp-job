@@ -43,6 +43,8 @@
 	  		<property name="concurrentConsumers" value="5"/>
 	  </bean>
 	  
-	  <bean id="tdpJobDemoClient" class="com.github.mtdp.job.demo.TdpJobDemoClient"/>
+	  <bean id="tdpJobDemoClient" class="com.github.mtdp.job.demo.TdpJobDemoClient">
+	  		<property name="messageSourceQueueName" value="${active.mq.receiver.job.test}"/>
+	  </bean>
 	  
 </beans>

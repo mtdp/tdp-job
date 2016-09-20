@@ -16,6 +16,7 @@ import org.springframework.jms.listener.SessionAwareMessageListener;
 import com.alibaba.fastjson.JSON;
 import com.github.mtdp.job.api.bean.JobDetailBean;
 import com.github.mtdp.job.api.bean.JobExeLogBean;
+import com.github.mtdp.util.DateUtil;
 import com.github.mtdp.util.QueueUtil;
 import com.github.mtdp.util.SystemUtil;
 import com.github.mtdp.util.UUIDUtil;
@@ -37,6 +38,8 @@ public abstract class TdpJobAbstractClient implements SessionAwareMessageListene
 	private JmsTemplate jmsTemplate;
 	/**任务日志保存队列**/
 	private String jobLogQueueName = "job.log";
+	/**消息的源队列名称,消息消费时间早于任务计划执行时间,重新进入队列使用**/
+	protected String messageSourceQueueName;
 	
 	@Override
 	public void onMessage(Message message, Session session) throws JMSException {
@@ -44,15 +47,31 @@ public abstract class TdpJobAbstractClient implements SessionAwareMessageListene
 		String jsonString = tmsg.getText();
 		logger.info("开始执行任务jsonString={}",jsonString);
 		JobDetailBean bean = JSON.parseObject(jsonString,JobDetailBean.class);
-		
+		String jobKey = bean.getJobKey();
+		//计划执行时间
+		Date planExeTime = bean.getLastExeTime();
+		Integer maxDeplayTime = bean.getMaxDelayTime();
+		long interval = DateUtil.calculateTwoTimeLag(new Date(), planExeTime);
+		//interval 大于0,说明当前执行时间大于计划执行时间,看任务配置是否可以允许延迟执行;
+		//interval 小于0,说明当前执行时间小于计划执行时间,消息来早了,重新进入队列,;
+		//interval 等于0,直接执行任务
+		if(interval > maxDeplayTime*1000){
+			logger.error("任务key={},当前执行时间大于任务配置的最大延迟时间({}ms)",jobKey,maxDeplayTime);
+			return;
+		}
+		if(interval < 0){
+			logger.debug("任务key={},当前执行时间小于任务计划执行时间,重新进入队列",jobKey);
+			QueueUtil.send2Queue(this.jmsTemplate, this.messageSourceQueueName, bean);
+			return;
+		}
 		JobExeLogBean log = new JobExeLogBean();
 		log.setJobId(bean.getJobId());
-		log.setJobKey(bean.getJobKey());
+		log.setJobKey(jobKey);
 		log.setJobName(bean.getJobName());
 		//赋值根据cron表达式解析后计划执行时间
-		log.setPlanExeTime(bean.getLastExeTime());
+		log.setPlanExeTime(planExeTime);
 		//获取本执行节点计算机名称及ip
-		log.setNodeName(SystemUtil.getSystemLocalIp().toString());
+		log.setNodeName(SystemUtil.getSystemLocalIp().getHostName());
 		log.setStatus(JobConstantsCode.JOB_EXE_ING);
 		log.setLogUUID(UUIDUtil.genUUID());
 		log.setStartExeTime(new Date());
@@ -89,6 +108,15 @@ public abstract class TdpJobAbstractClient implements SessionAwareMessageListene
 		QueueUtil.send2Queue(this.jmsTemplate, this.jobLogQueueName, jobExeAfterLog);
 	}
 	
+	public String getMessageSourceQueueName() {
+		return messageSourceQueueName;
+	}
+	public void setMessageSourceQueueName(String messageSourceQueueName) {
+		this.messageSourceQueueName = messageSourceQueueName;
+	}
+
+
+
 	/**
 	 * 执行任务的方法
 	 * @param message

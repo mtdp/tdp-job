@@ -22,11 +22,11 @@ public class MapperTest  extends BaseTest{
 	public void get(){
 		JobDetail d = this.detailMapper.get(1L);
 		logger.info("*********d={}",d);
-		logger.info("*********d.isAlarm()={}",d.isAlarm());
+		logger.info("*********d.isAlarm()={}",d.getIsAlarm());
 		
 		JobDetail dd = new JobDetail();
 		dd.setJobId(d.getJobId());
-		dd.setAlarm(true);
+		dd.setIsAlarm(false);
 		dd.setUpdateTime(new Date());
 		int cnt = this.detailMapper.update(dd);
 		logger.info("*********cnt={}",cnt);

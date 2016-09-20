@@ -18,5 +18,11 @@ public interface IJobDetailMapper extends BaseMapper<JobDetail,Long> {
 	 * @returnI
 	 */
 	public List<JobDetail> getNeedExeJobDetails();
+	
+	/**
+	 * 获取状态为启用的任务
+	 * @return
+	 */
+	public List<JobDetail> getEnableJobDetails();
 
 }

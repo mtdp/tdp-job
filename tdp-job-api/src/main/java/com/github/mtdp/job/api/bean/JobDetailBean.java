@@ -29,8 +29,10 @@ public class JobDetailBean implements Serializable{
 	private String jobDataJson;
 	/**执行此任务的cron表达式**/
 	private String cronExpress;
+	/**任务接受的最大延迟执行时间,单位秒;默认值=0,不延迟;值需大于0**/
+	private Integer maxDelayTime;
 	/**执行失败是否报警**/
-	private boolean isAlarm;
+	private Boolean isAlarm;
 	/**接受报警邮箱,多个邮箱用;隔开**/
 	private String alarmEmails;
 	/**5=禁用,10=启用**/
@@ -88,10 +90,16 @@ public class JobDetailBean implements Serializable{
 	public void setCronExpress(String cronExpress) {
 		this.cronExpress = cronExpress;
 	}
-	public boolean isAlarm() {
+	public Integer getMaxDelayTime() {
+		return maxDelayTime;
+	}
+	public void setMaxDelayTime(Integer maxDelayTime) {
+		this.maxDelayTime = maxDelayTime;
+	}
+	public Boolean getIsAlarm() {
 		return isAlarm;
 	}
-	public void setAlarm(boolean isAlarm) {
+	public void setIsAlarm(Boolean isAlarm) {
 		this.isAlarm = isAlarm;
 	}
 	public String getAlarmEmails() {
