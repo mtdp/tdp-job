@@ -101,8 +101,8 @@ public class JobExeResultListener implements SessionAwareMessageListener{
 	
 	public static void main(String[] args) {
 		JavaMailSenderImpl mail = new JavaMailSenderImpl();
-		String userName = "wangguoqing@aladingbank.com";
-		String password = "china76!";
+		String userName = "";
+		String password = "";
 		String host = "smtp.qiye.163.com";
 		mail.setUsername(userName);
 		mail.setPassword(password);
