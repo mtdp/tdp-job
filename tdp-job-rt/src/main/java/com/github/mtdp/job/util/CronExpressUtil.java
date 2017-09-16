@@ -1,6 +1,7 @@
 package com.github.mtdp.job.util;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,8 @@ import org.quartz.CronExpression;
  *
  */
 public class CronExpressUtil {
+	
+	private static final String CRON_EXPRESS = "ss mm HH dd MM ? yyyy";
 
 	/**
 	 * 获取cron表达式最近一次的执行时间
@@ -59,6 +62,13 @@ public class CronExpressUtil {
 		return dates;
 	}
 	
+	public static String getCron(Date d){
+		String cron = null;
+		SimpleDateFormat sdf = new SimpleDateFormat(CRON_EXPRESS);
+		cron = sdf.format(d);
+		return cron;
+	}
+	
 	public static void main(String[] args) throws ParseException {
 		String cronExp = "* * * * * ? *";
 		cronExp = "59 15 10 18 * ?";
@@ -66,6 +76,7 @@ public class CronExpressUtil {
 		Date d = new Date();
 		System.out.println(getLastTime(cronExp, d));
 		System.out.println(getLastFiveTime(cronExp, d));
+		System.out.println(getCron(d));
 	}
 	
 }

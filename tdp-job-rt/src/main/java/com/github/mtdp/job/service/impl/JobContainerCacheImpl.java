@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
+import com.github.mtdp.job.api.JobConstantsCode;
 import com.github.mtdp.job.api.bean.JobDetailBean;
 import com.github.mtdp.job.dao.IJobDetailMapper;
 import com.github.mtdp.job.dao.domain.JobDetail;
@@ -39,9 +40,6 @@ public class JobContainerCacheImpl implements IJobContainer {
 	/**过滤最大x毫秒内需要执行的任务,默认3秒=3*1000毫秒**/
 	private volatile long maxExeJobTime = 3 * 1000;
 	
-	/**缓存存储job的key**/
-	private String jobDetailCacheKey = "job:need:details";
-	
 	@Autowired
 	private IJobDetailMapper jobDetailMapper;
 	
@@ -58,7 +56,7 @@ public class JobContainerCacheImpl implements IJobContainer {
 		//3.将最近执行任务的时间更新至数据库
 		logger.info("开始循环执行任务处理isRun={}",this.isRun);
 		while(isRun){
-			List<JobDetail> jobs = this.cacheService.getNeedExeJobDetails(this.jobDetailCacheKey);
+			List<JobDetail> jobs = this.cacheService.getNeedExeJobDetails(JobConstantsCode.JOB_DETAIL_CACHEKEY);
 			logger.info("需要处理的任务数量cnt={}",jobs.size());
 			for(JobDetail j : jobs){
 				Date d = new Date();
@@ -69,7 +67,7 @@ public class JobContainerCacheImpl implements IJobContainer {
 					j.setLastExeTime(nextExeTime);
 					this.exeJob(j);
 					//更新缓存list中某个任务的数据
-					this.cacheService.updateValue4Key(this.jobDetailCacheKey, jobs);
+					this.cacheService.updateValue4Key(JobConstantsCode.JOB_DETAIL_CACHEKEY, jobs);
 				}else{
 					//当前时间={},key={},最近一次执行时间={}
 					logger.info("当前时间={},任务key={}此次不需要执行,最近一次执行时间={}",DateUtil.getCurrentTime2(),j.getJobKey(),DateUtil.formatDefault2(j.getLastExeTime()));

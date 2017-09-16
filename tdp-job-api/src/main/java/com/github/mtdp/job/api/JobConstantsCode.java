@@ -22,4 +22,7 @@ public class JobConstantsCode {
 	/**任务执行失败**/
 	public static int JOB_EXE_FAIL = 15;
 	
+	/**缓存存储job的key**/
+	public static String JOB_DETAIL_CACHEKEY = "job:need:details";
+	
 }

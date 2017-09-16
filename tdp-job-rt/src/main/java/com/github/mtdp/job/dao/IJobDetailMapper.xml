@@ -155,4 +155,21 @@
 			where jobId=#{jobId}
 		</update>
 		
+		<!-- 分页 start-->
+		<select id="searchJobPagination" resultType="JobDetail">
+			select *
+			from t_job_detail
+			<if test="sort != null and sort != ''">
+				order by ${sort} 
+				<if test="dir != null and dir != ''">
+					${dir} 
+				</if>
+			</if>
+			limit ${start},${limit} 
+		</select>
+		<select id="searchJobCount" resultType="java.lang.Integer">
+			select count(*)
+			from t_job_detail
+		</select>
+		
 	</mapper>

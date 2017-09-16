@@ -27,5 +27,11 @@ public interface ICacheService {
 	 * @param obj
 	 */
 	public void updateValue4Key(String key,Object obj);
+	
+	/**
+	 * 清除缓存数据
+	 * @param key
+	 */
+	public void clearCache(String key);
 
 }

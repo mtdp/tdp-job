@@ -1,19 +1,19 @@
-package com.github.mtdp.job.dao.domain.tbl;
+package com.github.mtdp.job.support;
 
 import java.io.Serializable;
 import java.util.Date;
-
+import java.util.List;
 /**
  * 
  *
- * @Description 任务明细实体
+ * @Description 支撑任务bean
  * @author wangguoqing
- * @date 2016年7月30日上午9:03:55
+ * @date 2016年8月23日下午2:50:14
  *
  */
-public class JobDetailTbl implements Serializable{
+public class SupportJobDetailBean implements Serializable{
 	
-	private static final long serialVersionUID = -1785806382819739154L;
+	private static final long serialVersionUID = 4466006680941534969L;
 	
 	private Long jobId;
 	/**任务key,全局唯一**/
@@ -33,13 +33,19 @@ public class JobDetailTbl implements Serializable{
 	/**任务接受的最大延迟执行时间,单位秒;默认值=0,不延迟;值需大于0**/
 	private Integer maxDelayTime;
 	/**执行失败是否报警**/
-	private Boolean isAlarm;
+	private boolean isAlarm;
 	/**接受报警邮箱,多个邮箱用;隔开**/
 	private String alarmEmails;
 	/**5=禁用,10=启用**/
 	private Integer status;
 	/**上一次执行任务的时间**/
 	private Date lastExeTime;
+	/**下一次执行任务的时间**/
+	private Date nextExeTime;
+	
+	/**最近需要执行任务的时间列表最多5个**/
+	private List<Date> lastExeTimes;
+	
 	private Date createTime;
 	private Date updateTime;
 	
@@ -97,10 +103,10 @@ public class JobDetailTbl implements Serializable{
 	public void setMaxDelayTime(Integer maxDelayTime) {
 		this.maxDelayTime = maxDelayTime;
 	}
-	public Boolean getIsAlarm() {
+	public boolean isAlarm() {
 		return isAlarm;
 	}
-	public void setIsAlarm(Boolean isAlarm) {
+	public void setAlarm(boolean isAlarm) {
 		this.isAlarm = isAlarm;
 	}
 	public String getAlarmEmails() {
@@ -120,6 +126,18 @@ public class JobDetailTbl implements Serializable{
 	}
 	public void setLastExeTime(Date lastExeTime) {
 		this.lastExeTime = lastExeTime;
+	}
+	public Date getNextExeTime() {
+		return nextExeTime;
+	}
+	public void setNextExeTime(Date nextExeTime) {
+		this.nextExeTime = nextExeTime;
+	}
+	public List<Date> getLastExeTimes() {
+		return lastExeTimes;
+	}
+	public void setLastExeTimes(List<Date> lastExeTimes) {
+		this.lastExeTimes = lastExeTimes;
 	}
 	public Date getCreateTime() {
 		return createTime;

@@ -10,7 +10,7 @@
 
 	<dubbo:application name="tdp-job" owner="wangguoqing" organization="mtdp"/>
 
-	<dubbo:registry timeout="15000" id="service" protocol="${dubbo.registry.protocol}" file="${user.home}/.dubbo-cache/provider-tdp-sms" address="${dubbo.registry.address}" group="dubbo-online" check="false" />
+	<dubbo:registry timeout="15000" id="service" protocol="${dubbo.registry.protocol}" file="${user.home}/.dubbo-cache/provider-tdp-sms" address="${dubbo.registry.address}" group="online" check="false" />
 	
 	<dubbo:protocol port="1${env.num}${dubbo.port}" name="${dubbo.protocol.name}" threadpool="${dubbo.protocol.threadpool}" threads="${dubbo.protocol.threads}" />
 	
@@ -19,8 +19,7 @@
 	<!-- 服务消费者缺省值配置 check="false" 关闭所有服务的启动时检查-->
 	<dubbo:consumer timeout="15000" retries="0" check="false"/>
 			
-	<!-- 短信下行接服务
-	<dubbo:service interface="com.github.mtdp.sms.service.IMTService" ref="MTServiceDefaultImpl" version="1.0.0"/>
-	 -->
+	<!-- 任务管理服务 -->
+	<dubbo:service interface="com.github.mtdp.job.support.IJobDetailManage" ref="job.support.JobDetailManageImpl" version="1.0.0"/>
 	
 </beans>

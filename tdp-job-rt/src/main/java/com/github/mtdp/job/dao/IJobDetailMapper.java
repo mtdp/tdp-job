@@ -1,6 +1,7 @@
 package com.github.mtdp.job.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.github.mtdp.job.dao.domain.JobDetail;
 import com.github.mtdp.persistence.BaseMapper;
@@ -24,5 +25,14 @@ public interface IJobDetailMapper extends BaseMapper<JobDetail,Long> {
 	 * @return
 	 */
 	public List<JobDetail> getEnableJobDetails();
+	
+	
+	/**
+	 * 任务分页
+	 * @param map
+	 * @return
+	 */
+	public List<JobDetail> searchJobPagination(Map<String, Object> map);
+	public Integer searchJobCount(Map<String, Object> map);
 
 }

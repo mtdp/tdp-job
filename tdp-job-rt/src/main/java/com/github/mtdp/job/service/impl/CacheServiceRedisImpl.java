@@ -12,6 +12,7 @@ import com.github.mtdp.job.dao.IJobDetailMapper;
 import com.github.mtdp.job.dao.domain.JobDetail;
 import com.github.mtdp.job.service.ICacheService;
 import com.github.mtdp.persistence.RedisManager;
+import com.github.mtdp.util.StringUtil;
 /**
  * 
  *
@@ -55,6 +56,14 @@ public class CacheServiceRedisImpl implements ICacheService {
 		logger.info("更新key={}的缓存数据",key);
 		String value = JSON.toJSONString(obj);
 		this.redisManager.set(key, value);
+	}
+	
+	@Override
+	public void clearCache(String key) {
+		if(StringUtil.isNotBlank(key)){
+			this.redisManager.del(key);
+			logger.info("清除key={}缓存数据成功",key);
+		}
 	}
 
 }
