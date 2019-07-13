@@ -62,8 +62,13 @@ public class JobContainerCacheImpl implements IJobContainer {
 				Date d = new Date();
 				//任务下次执行的时间
 				Date nextExeTime = CronExpressUtil.getLastTime(j.getCronExpress(), d);
+				//2017-09-22 13:06:41 fix 如果任务过期了,没有下一次执行时间直接跳过bug
+				if(nextExeTime == null){
+					logger.info("任务jobId={}没有下一次执行时间,请检查cron需要执行的时间是否过期",j.getJobId());
+					continue;
+				}
 				long lagVal = DateUtil.calculateTwoTimeLag(nextExeTime, d);
-				if(lagVal >= 0 && lagVal <= this.maxExeJobTime){
+				if(JobConstantsCode.ENABLE == j.getStatus().intValue() && lagVal >= 0 && lagVal <= this.maxExeJobTime){
 					j.setLastExeTime(nextExeTime);
 					this.exeJob(j);
 					//更新缓存list中某个任务的数据

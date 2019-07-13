@@ -159,14 +159,14 @@ public class ChioceMasterNodeDBImpl implements IChioceMasterNode {
 				t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 					@Override
 					public void uncaughtException(Thread t, Throwable e) {
-						logger.info("任务执行容器初始化异常t={},e={}",t,e);
+						logger.error("任务执行容器初始化异常t={},e={},stack={}",t,e,e.getStackTrace());
 						//设置jobContanier的isRun=false,下次心跳执行时继续执行
 						jobContainer.setRun(false);
 					}
 				});
 				t.start();
 			}else{
-				logger.info("不需要修改isRun的值,isRun={}",this.jobContainer.getRun());
+				logger.debug("不需要修改isRun的值,isRun={}",this.jobContainer.getRun());
 			}
 		}else{
 			jobContainer.setRun(false);

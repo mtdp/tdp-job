@@ -22,12 +22,12 @@
 	  	
 	  <!-- 连接工厂 -->
 	  <bean id="mqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-	  		<property name="brokerURL" value="${active.mq.brokerurl}"/>
+	  		<property name="brokerURL" value="${mq.brokerurl}"/>
 	  </bean>
 	  
-	  <!-- 记录任务日志队列 -->
+	  <!-- 执行任务队列 -->
 	  <bean id="mqDestination1" class="org.apache.activemq.command.ActiveMQQueue">
-	  		<constructor-arg index="0" value="${active.mq.receiver.job.test}"/>
+	  		<constructor-arg index="0" value="${mq.receiver.job.test}"/>
 	  </bean>	   
 	  
 	  <!-- spring jms 模版 -->
@@ -35,7 +35,7 @@
 	  		<property name="connectionFactory" ref="poolConnectionFactory"/>
 	  </bean>
 	  
-	  <!-- 记录任务日志队列 -->
+	  <!-- 执行任务队列-->
 	  <bean id="jmsContainer1" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
 	  		<property name="connectionFactory" ref="poolConnectionFactory"/>
 	  		<property name="destination" ref="mqDestination1"/>
@@ -44,7 +44,7 @@
 	  </bean>
 	  
 	  <bean id="tdpJobDemoClient" class="com.github.mtdp.job.demo.TdpJobDemoClient">
-	  		<property name="messageSourceQueueName" value="${active.mq.receiver.job.test}"/>
+	  		<property name="messageSourceQueueName" value="${mq.receiver.job.test}"/>
 	  </bean>
 	  
 </beans>

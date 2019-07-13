@@ -41,7 +41,7 @@ public class CacheServiceRedisImpl implements ICacheService {
 		logger.info("缓存中的数据是jobDetailsJson={}",jobDetailsJson);
 		if(jobDetailsJson == null){
 			logger.info("缓存key={}没有数据,查询数据库",jobDetailCacheKey);
-			List<JobDetail> jobDetails = this.jobDetailMapper.gets();
+			List<JobDetail> jobDetails = this.jobDetailMapper.getNeedExeJobDetails();
 			if(jobDetails != null && !jobDetails.isEmpty()){
 				jobDetailsJson = JSON.toJSONString(jobDetails);
 				this.redisManager.set(jobDetailCacheKey, jobDetailsJson,this.expire);

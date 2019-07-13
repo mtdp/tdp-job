@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
+import com.github.mtdp.job.api.JobConstantsCode;
 import com.github.mtdp.job.api.bean.JobDetailBean;
 import com.github.mtdp.job.dao.IJobDetailMapper;
 import com.github.mtdp.job.dao.domain.JobDetail;
@@ -58,9 +59,14 @@ public class JobContainerImpl implements IJobContainer {
 				Date d = new Date();
 				//任务下次执行的时间
 				Date nextExeTime = CronExpressUtil.getLastTime(j.getCronExpress(), d);
+				//2017-09-22 13:06:41 fix 如果任务过期了,没有下一次执行时间直接跳过bug
+				if(nextExeTime == null){
+					logger.info("任务jobId={}没有下一次执行时间,请检查cron需要执行的时间是否过期",j.getJobId());
+					continue;
+				}
 				long lagVal = DateUtil.calculateTwoTimeLag(nextExeTime, d);
 				//下次执行时间是当前时候之后,并且大于当前时间maxExeJobTime毫秒,通知client执行此任务
-				if(lagVal >= 0 && lagVal <= this.maxExeJobTime){
+				if(JobConstantsCode.ENABLE == j.getStatus().intValue() && lagVal >= 0 && lagVal <= this.maxExeJobTime){
 					j.setLastExeTime(nextExeTime);
 					this.exeJob(j);
 				}else{

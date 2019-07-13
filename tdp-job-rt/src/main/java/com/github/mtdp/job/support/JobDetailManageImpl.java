@@ -100,9 +100,16 @@ public class JobDetailManageImpl implements IJobDetailManage {
 		if(cnt == 1){
 			//清除缓存,让缓存更新
 			this.cacheService.clearCache(JobConstantsCode.JOB_DETAIL_CACHEKEY);
+			mBean.setJobId(job.getJobId());
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public SupportJobDetailBean createJob(SupportJobDetailBean mBean) {
+		this.saveJob(mBean);
+		return mBean;
 	}
 	
 	@Override

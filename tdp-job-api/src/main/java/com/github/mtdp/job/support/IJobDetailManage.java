@@ -40,6 +40,13 @@ public interface IJobDetailManage {
     public boolean saveJob(SupportJobDetailBean mBean);
     
     /**
+     * 新增任务,并返回新增的数据
+     * @param mBean
+     * @return
+     */
+    public SupportJobDetailBean createJob(SupportJobDetailBean mBean);
+    
+    /**
      * 手动执行任务
      * @param mBean
      * @return

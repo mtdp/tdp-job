@@ -10,7 +10,7 @@
 
 	<dubbo:application name="tdp-job" owner="wangguoqing" organization="mtdp"/>
 
-	<dubbo:registry timeout="15000" id="service" protocol="${dubbo.registry.protocol}" file="${user.home}/.dubbo-cache/provider-tdp-sms" address="${dubbo.registry.address}" group="online" check="false" />
+	<dubbo:registry timeout="15000" id="service" protocol="${dubbo.registry.protocol}" file="${user.home}/.dubbo-cache/provider-tdp-job" address="${dubbo.registry.address}" group="online" check="false" />
 	
 	<dubbo:protocol port="1${env.num}${dubbo.port}" name="${dubbo.protocol.name}" threadpool="${dubbo.protocol.threadpool}" threads="${dubbo.protocol.threads}" />
 	

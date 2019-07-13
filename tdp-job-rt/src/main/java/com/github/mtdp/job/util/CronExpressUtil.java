@@ -51,9 +51,12 @@ public class CronExpressUtil {
 			//模拟时间走5秒
 			for(int i = 0; i < cnt; i++){
 				Date d = cp.getNextValidTimeAfter(date);
+				if(d == null){
+					continue;
+				}
 				dates.add(d);
 				//设置时间为
-				date.setTime(d.getTime() + 1000);
+				date.setTime(d.getTime());
 			}
 			
 		}catch(ParseException e){
@@ -62,6 +65,11 @@ public class CronExpressUtil {
 		return dates;
 	}
 	
+	/**
+	 * 星期没有处理
+	 * @param d
+	 * @return
+	 */
 	public static String getCron(Date d){
 		String cron = null;
 		SimpleDateFormat sdf = new SimpleDateFormat(CRON_EXPRESS);
@@ -73,6 +81,9 @@ public class CronExpressUtil {
 		String cronExp = "* * * * * ? *";
 		cronExp = "59 15 10 18 * ?";
 		cronExp = "0 14 15 ? * *";
+		cronExp = "0 30 10 22 * ? 2017";
+		cronExp = "0 30 10 22 12,1 ? 2017,2018";
+		cronExp = "13 25 16 21 * ? 2017 ";
 		Date d = new Date();
 		System.out.println(getLastTime(cronExp, d));
 		System.out.println(getLastFiveTime(cronExp, d));
